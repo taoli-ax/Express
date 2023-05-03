@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./javascripts/jquery.min.js"></script>
+</head>
+<body>
+    <div>
+        <div><label for="">班级：</label><input type="text" id="classesName" /></div>
+        <div><button id="addNewClass">新</button></div>
+    </div>
+    <!--列表页面-->
+    <div>
+        <h3>班级列表</h3>
+        <table>
+            <thead>
+                <tr>
+                    <td>班级名称</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 数据渲染区域 -->
+            </tbody>
+        </table>
+        <select name="" id="pageSize">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+        </select>
+    </div>
+    <div>
+        <button id="prevPage">上一页</button>
+        <button id="nextPage">下一页</button>
+        <button id="indexPage">首页页</button>
+        <button id="tailPage">尾页</button>
+        <span><strong id="parentPage">1</strong>/<strong id="pages">5</strong>页</span>
+
+    </div>
+</body>
+<script>
+    let queryData={
+        pageSize:5,
+        parentPage:1
+    };
+    getClasses();
+    function getClasses(){
+        
+        $.ajax({
+            url:'classes/getClasses',
+            type:'get',
+            data:{
+                pageSize:queryData.pageSize,
+                parentPage:queryData.parentPage,
+            },
+            success(msg){
+                queryData={
+                    ...queryData,
+                    ...msg,
+                }
+                //get 并渲染数据
+                console.log("getclass 数据",msg)
+                const str=msg.classesData.map(item=>{
+                    return `<tr>
+                                <td>${item.name}</td>
+                                <td>
+                                    <button>添加</button>
+                                    <button>删除</button>
+                                </td>
+                            </tr>
+                           `
+                }).join("");
+                $('tbody').html(str)
+                $('#parentPage').text(queryData.parentPage);
+                $("#pages").text(msg.pages);
+            }   
+        })
+    }
+    $("#nextPage").click(function(){
+        if(queryData.pages>=queryData.parentPage){
+            queryData.parentPage++;
+            console.log("下一页",queryData);
+            getClasses();
+        }
+        
+    })
+    $("#prevPage").click(function(){
+        if(queryData.parentPage>1){
+            queryData.parentPage--;
+            console.log("上一页",queryData)
+            getClasses();
+        }
+        
+    })
+
+    $("#indexPage").click(function(){
+        if(queryData.parentPage>1){
+            queryData.parentPage=1;
+            console.log("上一页",queryData)
+            getClasses();
+        }
+    })
+    $("#tailPage").click(function(){
+        if(queryData.pages>=queryData.parentPage){
+            queryData.parentPage=queryData.pages;
+            console.log("上一页",queryData)
+            getClasses();
+        }
+        
+    })
+    $("#addNewClass").click(function(){
+        $.ajax({
+            url:"classes/addNewClass",
+            type:"post",
+            data:{name:$("#classesName").val()},
+            success(msg){
+                //console.log(msg);
+                getClasses();
+            }
+        })
+        })
+    
+</script>
+
+</html>
